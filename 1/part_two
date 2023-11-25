@@ -1,0 +1,35 @@
+#!/usr/bin/env python3
+
+"""Computes the combined total calories carried by the three elves with the most calories carried.
+
+See Advent of Code 2022 for a description of the input format
+"""
+
+import sys
+import functools
+
+DESC=__doc__
+USAGE='{scriptname} elves_manifest_file'.format(scriptname=sys.argv[0])
+
+try:
+    with open(sys.argv[1], 'r') as f:
+        str_in = f.read()
+except Exception as e:
+    """Basic (lazy) error handling."""
+    sys.stderr.write('Something went wrong: ' + repr(e) + '\n')
+    sys.stderr.write('Usage: {}\n\n{}\n'.format(USAGE, DESC))
+    sys.stderr.flush()
+    sys.exit(1)
+
+strl_elf_manifests_in    = str_in.strip('\n').split('\n\n')
+numl_calories_in         = [ [int(line) for line in em.split('\n')] for em in strl_elf_manifests_in ]
+numl_calorie_totals_in   = [ sum(num_item_cals) for num_item_cals in numl_calories_in ]
+
+# Find the top 3 calorie counts.
+# Complexity: reduce: O(n), sort(length 4) = O(1).
+# Better than O(n log n) to sort the list and then select the top 3, for very large parties of elves.
+numl_calorie_totals_top3 = functools.reduce(lambda v, e: (sorted(v + [e], reverse=True)[:3]), numl_calorie_totals_in, [0,0,0])
+
+num_calories_sum_top3    = sum(numl_calorie_totals_top3)
+
+print (num_calories_sum_top3)
