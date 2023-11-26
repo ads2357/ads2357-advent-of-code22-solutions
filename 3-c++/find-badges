@@ -1,0 +1,73 @@
+#!/usr/bin/env python3
+
+import sys
+import os
+import functools
+import itertools
+
+C_GROUPSIZE = 3
+
+C_INPUT = 'input'
+#infile = C_INPUT
+infile = sys.argv[1]
+
+with open(infile, 'r') as f:
+    # generator pipeline for fun.
+
+    # Using generator comprehensions can be more difficult to debug
+    # and less intuitive, compared to procedural code. A 'for' loop
+    # over the groups would be an alternative approach.
+
+    # strip newlines to obtain inventory strings for each elf
+    g_lines = (line.strip() for line in f)
+
+    # extract triplets of strings into tuples (until there are none left)
+    groups = iter(lambda: tuple(itertools.islice(g_lines, C_GROUPSIZE)), ())
+
+    # enable the raising of exceptions from comprehensions
+    def panic(s, E=Exception):
+        """"Aaggggh\""""
+        raise E(s)
+
+    # iterate over each group's packs, convert pack strings to
+    # character sets, find intersection of all members' packs,
+    # i.e. the badge they have in common (see challenge description)
+    badges = ( functools.reduce(lambda acc, pack: pack & acc,
+                                (set(pack) for pack in group_packs)
+                                ).pop()
+               for group_packs in groups
+               if len(group_packs) == 3 or panic('bad group: ' + repr(group_packs))
+              )
+
+    # score badges
+    C_ORD_UPPER_A = ord('A')
+    C_ORD_LOWER_A = ord('a')
+    C_SCORE_UPPER_A = 27
+    C_SCORE_LOWER_A = 1
+
+    priorities = (
+        oc - C_ORD_LOWER_A + C_SCORE_LOWER_A
+        if oc >= C_ORD_LOWER_A else
+        oc - C_ORD_UPPER_A + C_SCORE_UPPER_A
+        for oc in
+        ( ord(c) for c in badges )
+        )
+
+    sum_priorities = sum(priorities)
+
+    print(sum_priorities)
+
+def print_gen(g):
+    """Return a generator chain which yields the same values as param 'g'
+    but also prints them as they are generated.
+
+    """
+    return ( ( # print returns None which is then discarded, but side
+               # effects (i.e. the printing) still happen.
+        print(v,
+              '({}:{})'.format(os.path.basename(g.gi_code.co_filename),
+                               g.gi_code.co_firstlineno,
+                               )
+              ),
+        v
+    )[1] for v in g )
