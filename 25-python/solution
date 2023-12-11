@@ -1,0 +1,54 @@
+#!/usr/bin/env python3
+
+import itertools
+
+infilename = 'input'
+
+digit_to_value = {
+    '=' : -2,
+    '-' : -1,
+    '0' : 0,
+    '1' : 1,
+    '2' : 2,
+}
+
+value_to_digit = {
+    v : k
+    for k,v in digit_to_value.items()
+}
+
+def decode_snafu(ssnafu):
+
+    value = 0
+
+    for ii, digit in enumerate(ssnafu[::-1]):
+        value += 5**ii * digit_to_value[digit]
+
+    return value
+
+def encode_snafu(n):
+    ssnafu = ''
+
+    # the problem easier to understand if each (SNAFU) digit is
+    # adjusted into a [0,5] range.
+
+    ENOUGH_DIGITS = 40 # terrible average performance but I don't care to optimise.
+    n_plus_22222 = n + sum(2*5**ii for ii in range(ENOUGH_DIGITS))
+
+    for ii in itertools.count():
+        if n_plus_22222 == 0:
+            break
+        assert n_plus_22222 > 0
+
+        digit = n_plus_22222 % 5
+        ssnafu = value_to_digit[digit-2] + ssnafu
+        n_plus_22222 -= digit
+        assert n_plus_22222 % 5 == 0
+        n_plus_22222 //= 5
+
+    return ssnafu.lstrip('0')
+
+with open(infilename, 'r') as f:
+    lines = f.readlines() # I don't care about memory usage 8)
+
+print(encode_snafu(sum(decode_snafu(s.strip()) for s in lines)))
