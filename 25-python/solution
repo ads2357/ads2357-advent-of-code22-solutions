@@ -30,14 +30,13 @@ def encode_snafu(n):
     ssnafu = ''
 
     # the problem easier to understand if each (SNAFU) digit is
-    # adjusted into a [0,5] range.
+    # adjusted into a [0,5) range.
 
     ENOUGH_DIGITS = 40 # terrible average performance but I don't care to optimise.
+    # Could be optimised by adding digits one at a time as needed, while the original n is not zero.
     n_plus_22222 = n + sum(2*5**ii for ii in range(ENOUGH_DIGITS))
 
-    for ii in itertools.count():
-        if n_plus_22222 == 0:
-            break
+    while n_plus_22222 != 0:
         assert n_plus_22222 > 0
 
         digit = n_plus_22222 % 5
